@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Interactive Plot #{{ plot_id }}</title>
+    <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        html, body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: white;
+            overflow: hidden;
+        }
+        #plot {
+            width: 100%;
+            height: 100vh;
+        }
+        #status {
+            position: fixed;
+            bottom: 16px;
+            right: 16px;
+            padding: 8px 12px;
+            background: rgba(33, 150, 243, 0.9);
+            color: white;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
+        #status.active {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div id="plot"></div>
+    <div id="status">Capturing...</div>
+
+    <script>
+    (function() {
+        const plotDiv = document.getElementById('plot');
+        const statusDiv = document.getElementById('status');
+
+        const CAPTURE_CONFIG = {{ capture_config | tojson }};
+        const SCREENSHOT_CONFIG = {{ screenshot_config | tojson }};
+        const plotId = {{ plot_id }};
+
+        function debounce(fn, delay) {
+            let timeoutId;
+            return function(...args) {
+                clearTimeout(timeoutId);
+                timeoutId = setTimeout(() => fn(...args), delay);
+            };
+        }
+
+        function showStatus(msg) {
+            statusDiv.textContent = msg;
+            statusDiv.classList.add('active');
+            setTimeout(() => statusDiv.classList.remove('active'), 2000);
+        }
+
+        async function captureEvent(eventType, eventData, captureScreenshot) {
+            if (!CAPTURE_CONFIG[eventType] || !CAPTURE_CONFIG[eventType].enabled) {
+                return;
+            }
+
+            try {
+                showStatus(`Capturing ${eventType}...`);
+
+                let screenshotDataUrl = null;
+                if (captureScreenshot && CAPTURE_CONFIG[eventType].screenshot) {
+                    screenshotDataUrl = await Plotly.toImage(plotDiv, SCREENSHOT_CONFIG);
+                }
+
+                await fetch('/plot/api/log', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        plot_id: plotId,
+                        timestamp: new Date().toISOString(),
+                        event_type: eventType,
+                        payload: eventData,
+                        screenshot: screenshotDataUrl
+                    })
+                });
+
+                showStatus('✓ Captured');
+            } catch (error) {
+                console.error('Capture error:', error);
+                showStatus('✗ Failed');
+            }
+        }
+
+        const captureRelayoutDebounced = debounce(
+            (data) => captureEvent('relayout', data, false),
+            500
+        );
+
+        async function init() {
+            try {
+                const figData = {{ fig_json | tojson }};
+
+                await Plotly.newPlot(plotDiv, figData.data, figData.layout, {
+                    responsive: true,
+                    displayModeBar: true
+                });
+
+                if (CAPTURE_CONFIG.init && CAPTURE_CONFIG.init.enabled) {
+                    await captureEvent('init', {plot_id: plotId}, true);
+                }
+
+                plotDiv.on('plotly_click', (data) => {
+                    captureEvent('click', {
+                        points: data.points.map(p => ({x: p.x, y: p.y, curve: p.curveNumber}))
+                    }, true);
+                });
+
+                plotDiv.on('plotly_doubleclick', () => {
+                    captureEvent('doubleclick', {action: 'doubleclick'}, true);
+                });
+
+                plotDiv.on('plotly_selected', (data) => {
+                    if (data && data.points && data.points.length > 0) {
+                        captureEvent('selected', {
+                            point_count: data.points.length,
+                            range: data.range
+                        }, true);
+                    }
+                });
+
+                plotDiv.on('plotly_selecting', (data) => {
+                    if (CAPTURE_CONFIG.selecting && CAPTURE_CONFIG.selecting.enabled) {
+                        captureEvent('selecting', {in_progress: true}, false);
+                    }
+                });
+
+                plotDiv.on('plotly_deselect', () => {
+                    captureEvent('deselect', {action: 'deselect'}, true);
+                });
+
+                plotDiv.on('plotly_hover', (data) => {
+                    if (CAPTURE_CONFIG.hover && CAPTURE_CONFIG.hover.enabled) {
+                        captureEvent('hover', {
+                            points: data.points.map(p => ({x: p.x, y: p.y}))
+                        }, false);
+                    }
+                });
+
+                plotDiv.on('plotly_unhover', (data) => {
+                    if (CAPTURE_CONFIG.unhover && CAPTURE_CONFIG.unhover.enabled) {
+                        captureEvent('unhover', {}, false);
+                    }
+                });
+
+                plotDiv.on('plotly_legendclick', (data) => {
+                    captureEvent('legendclick', {
+                        curve_number: data.curveNumber,
+                        expanded_index: data.expandedIndex
+                    }, true);
+                });
+
+                plotDiv.on('plotly_legenddoubleclick', (data) => {
+                    captureEvent('legenddoubleclick', {
+                        curve_number: data.curveNumber
+                    }, true);
+                });
+
+                plotDiv.on('plotly_relayout', (data) => {
+                    if (data['xaxis.range[0]'] || data['xaxis.autorange'] || data['yaxis.range[0]']) {
+                        captureRelayoutDebounced(data);
+                    }
+                });
+
+                plotDiv.on('plotly_restyle', (data) => {
+                    captureEvent('restyle', {update: data}, true);
+                });
+
+                plotDiv.on('plotly_afterplot', () => {
+                    if (CAPTURE_CONFIG.afterplot && CAPTURE_CONFIG.afterplot.enabled) {
+                        captureEvent('afterplot', {}, false);
+                    }
+                });
+
+                plotDiv.on('plotly_redraw', () => {
+                    if (CAPTURE_CONFIG.redraw && CAPTURE_CONFIG.redraw.enabled) {
+                        captureEvent('redraw', {}, false);
+                    }
+                });
+
+                plotDiv.on('plotly_autosize', () => {
+                    if (CAPTURE_CONFIG.autosize && CAPTURE_CONFIG.autosize.enabled) {
+                        captureEvent('autosize', {}, false);
+                    }
+                });
+
+                plotDiv.on('plotly_animated', () => {
+                    if (CAPTURE_CONFIG.animated && CAPTURE_CONFIG.animated.enabled) {
+                        captureEvent('animated', {}, false);
+                    }
+                });
+
+            } catch (error) {
+                console.error('Init error:', error);
+            }
+        }
+
+        init();
+    })();
+    </script>
+</body>
+</html>
