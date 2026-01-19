@@ -26,8 +26,10 @@ agent/
 
 # Node.js / Frontend
 node_modules/
-dist/
+/dist/
 build/
+# Keep frontend dist for packaging (built assets)
+!deepdata/web/frontend/dist/
 .vite/
 .cache/
 cache/

@@ -1,0 +1,116 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Base font settings for better text rendering */
+@layer base {
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-size: 15px;
+    line-height: 1.6;
+  }
+}
+
+/* Minimal scrollbar */
+@layer utilities {
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: #d1d1d6;
+    border-radius: 3px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background: #b5b5ba;
+  }
+
+  /* Hide scrollbar but keep scroll functionality */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Minimal markdown styling */
+.markdown {
+  @apply text-light-text;
+  line-height: 1.7;
+  font-size: 15px;
+  font-weight: 400;
+}
+
+.markdown p {
+  @apply mb-4;
+  line-height: 1.7;
+}
+
+.markdown code {
+  @apply bg-gray-100 px-2 py-0.5 rounded text-sm font-mono;
+  font-weight: 500;
+}
+
+.markdown pre {
+  @apply bg-gray-100 p-4 rounded-xl mb-4 overflow-x-auto;
+  line-height: 1.5;
+}
+
+.markdown pre code {
+  @apply p-0 bg-transparent;
+  font-weight: 400;
+  font-size: 14px;
+}
+
+.markdown ul,
+.markdown ol {
+  @apply mb-4 ml-5;
+}
+
+.markdown li {
+  @apply mb-1;
+}
+
+.markdown h1 {
+  @apply text-2xl font-bold mb-4 mt-0 text-gray-900;
+}
+
+.markdown h2 {
+  @apply text-xl font-semibold mb-3 mt-6 text-gray-800;
+}
+
+.markdown h3 {
+  @apply text-lg font-semibold mb-2 mt-4 text-gray-800;
+}
+
+.markdown h4 {
+  @apply text-base font-semibold mb-2 mt-3 text-gray-700;
+}
+
+.markdown blockquote {
+  @apply border-l-4 border-gray-300 pl-4 mb-4 text-gray-600;
+}
+
+.markdown a {
+  @apply text-blue-600 hover:text-blue-700 underline;
+}
+
+/* Typing animation */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+.typing-cursor {
+  animation: blink 1s infinite;
+}
