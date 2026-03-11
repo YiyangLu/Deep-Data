@@ -1,0 +1,63 @@
+# Environment
+.env
+
+# Logs
+logs/
+logs_*/
+*.log
+
+# Trash
+.trash/
+docs/Eval
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.py[cod]
+*$py.class
+.pytest_cache/
+.venv/
+venv/
+env/
+agent/
+.memory/
+
+# Node.js / Frontend
+node_modules/
+/dist/
+build/
+# Keep frontend dist for packaging (built assets)
+!deepdata/web/frontend/dist/
+.vite/
+.cache/
+cache/
+# IDE
+.vscode/
+.idea/
+.claude/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Project specific
+playground/
+benchmarks/claude/
+benchmarks/interactive_results/
+benchmarks/viz_results/
+
+# Playwright screenshots
+.playwright-mcp/*.png
+
+# Output files
+logs/*.db
+logs/*.png
+logs/*.txt
+
+# Eval artifacts
+eval/*.db

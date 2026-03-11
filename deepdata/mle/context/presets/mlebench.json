@@ -1,0 +1,15 @@
+{
+  "goal": "Maximize validation metric using train/val split.",
+  "task_description": "data/description.md",
+  "data_paths": {
+    "train": "data/train.csv",
+    "test": "data/test.csv"
+  },
+  "output_paths": {
+    "prediction": "submission/submission.csv",
+    "model": "model/model.pkl"
+  },
+  "output_requirements": "Output files required:\n- submission/submission.csv: CSV matching sample_submission.csv format\n  - Must have same number of rows as test set\n  - No null values allowed\n- model/model.pkl: Trained model checkpoint (optional)",
+  "gitignore": ["data/", "data", "submission/", "submission", "model/", "model", "__pycache__/", "*.pyc", ".memory/", ".memory"],
+  "sync": ["data/", ".memory/"]
+}
