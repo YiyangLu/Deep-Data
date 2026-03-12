@@ -6,7 +6,11 @@
   <i>An agent framework built on Claude SDK for data analysis, visualization, and ML automation.</i>
 </p>
 
-https://github.com/user-attachments/assets/facf50b3-5d07-4003-9c63-3cb01925784f
+<p align="center">
+  <a href="https://github.com/user-attachments/assets/facf50b3-5d07-4003-9c63-3cb01925784f">
+    <img src="assets/demo-cover.png" alt="Watch Demo" width="30%">
+  </a>
+</p>
 
 ## Features
 
