@@ -93,4 +93,4 @@ deepdata
 
 ## Paper
 
-Our paper describing the IVG framework benchmark is coming soon on arXiv.
+[![arXiv](https://img.shields.io/badge/arXiv-2604.21134-b31b1b.svg)](https://arxiv.org/abs/2604.21134)
